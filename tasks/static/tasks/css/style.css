@@ -1,0 +1,513 @@
+/* ==========================================================================
+   TaskFlow - Professional Light-Theme Stylesheet
+   Color Palette:
+   - Primary: #6366F1 (Indigo) & #7C3AED (Violet/Purple)
+   - Accents: #38BDF8 (Sky Blue), #818CF8 (Soft Lavender)
+   - Backgrounds: #F8FAFD (Canvas), #FFFFFF (Cards/Surfaces)
+   - Borders: #E2E8F0, #EEF2F6
+   - Typography: 'Plus Jakarta Sans', sans-serif
+   ========================================================================== */
+
+:root {
+    --tf-primary: #6366f1;
+    --tf-primary-hover: #4f46e5;
+    --tf-primary-light: #eef2ff;
+    --tf-purple: #7c3aed;
+    --tf-purple-light: #f3e8ff;
+    --tf-blue: #0284c7;
+    --tf-blue-light: #e0f2fe;
+    --tf-lavender: #818cf8;
+    --tf-lavender-subtle: #f5f3ff;
+    --tf-bg: #f8fafd;
+    --tf-surface: #ffffff;
+    --tf-text-dark: #0f172a;
+    --tf-text-secondary: #475569;
+    --tf-text-muted: #94a3b8;
+    --tf-border: #e2e8f0;
+    --tf-border-subtle: #f1f5f9;
+    --tf-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --tf-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --tf-shadow-hover: 0 12px 28px -4px rgba(99, 102, 241, 0.16), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+    --tf-radius: 16px;
+    --tf-radius-sm: 10px;
+    --tf-transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Global Body */
+body.taskflow-body {
+    background-color: var(--tf-bg);
+    color: var(--tf-text-dark);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Typography Helpers */
+.fs-7 { font-size: 0.8125rem; }
+.fs-8 { font-size: 0.75rem; }
+.tracking-wide { letter-spacing: 0.05em; }
+
+/* Navigation Bar */
+.taskflow-navbar {
+    background-color: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--tf-border);
+    padding: 0.85rem 0;
+    transition: var(--tf-transition);
+}
+
+.brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--tf-primary), var(--tf-purple));
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.brand-icon-sm {
+    width: 26px;
+    height: 26px;
+    font-size: 0.9rem;
+    border-radius: 7px;
+}
+
+.brand-text {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--tf-text-dark);
+    letter-spacing: -0.02em;
+}
+
+.brand-highlight {
+    background: linear-gradient(135deg, var(--tf-primary), var(--tf-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.taskflow-navbar .nav-link {
+    font-size: 0.925rem;
+    font-weight: 500;
+    color: var(--tf-text-secondary);
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--tf-radius-sm);
+    transition: var(--tf-transition);
+}
+
+.taskflow-navbar .nav-link:hover,
+.taskflow-navbar .nav-link.active {
+    color: var(--tf-primary);
+    background-color: var(--tf-primary-light);
+}
+
+/* Buttons */
+.btn-primary-custom {
+    background: linear-gradient(135deg, var(--tf-primary), var(--tf-purple));
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--tf-radius-sm);
+    transition: var(--tf-transition);
+}
+
+.btn-primary-custom:hover {
+    background: linear-gradient(135deg, var(--tf-primary-hover), #6d28d9);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.28);
+}
+
+.btn-outline-primary-custom {
+    color: var(--tf-primary);
+    border: 1px solid var(--tf-primary);
+    background-color: transparent;
+    font-weight: 600;
+    border-radius: var(--tf-radius-sm);
+    padding: 0.45rem 1.1rem;
+    transition: var(--tf-transition);
+}
+
+.btn-outline-primary-custom:hover {
+    background-color: var(--tf-primary-light);
+    color: var(--tf-primary-hover);
+    border-color: var(--tf-primary);
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: none;
+    transition: var(--tf-transition);
+}
+
+.btn-ghost-primary {
+    color: var(--tf-primary);
+    background-color: var(--tf-primary-light);
+}
+.btn-ghost-primary:hover {
+    background-color: #e0e7ff;
+    color: var(--tf-primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-ghost-warning {
+    color: #b45309;
+    background-color: #fef3c7;
+}
+.btn-ghost-warning:hover {
+    background-color: #fde68a;
+    color: #92400e;
+    transform: translateY(-1px);
+}
+
+.btn-ghost-danger {
+    color: #dc2626;
+    background-color: #fee2e2;
+}
+.btn-ghost-danger:hover {
+    background-color: #fecaca;
+    color: #b91c1c;
+    transform: translateY(-1px);
+}
+
+/* Metric Cards */
+.metric-card {
+    background-color: var(--tf-surface);
+    border-radius: var(--tf-radius);
+    transition: var(--tf-transition);
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--tf-shadow-hover) !important;
+}
+
+.metric-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+.bg-purple-tint { background-color: var(--tf-purple-light); }
+.bg-blue-tint { background-color: var(--tf-blue-light); }
+.bg-lavender-tint { background-color: var(--tf-primary-light); }
+.bg-lavender-subtle { background-color: #f5f3ff; }
+
+.text-purple { color: var(--tf-purple) !important; }
+.text-blue { color: var(--tf-blue) !important; }
+.text-indigo { color: var(--tf-primary) !important; }
+
+/* Filter Card */
+.filter-card {
+    background-color: var(--tf-surface);
+    border-radius: var(--tf-radius);
+}
+
+/* Task Cards */
+.task-card {
+    background-color: var(--tf-surface);
+    border-radius: var(--tf-radius);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    transition: var(--tf-transition);
+}
+
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--tf-shadow-hover) !important;
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.task-title {
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--tf-text-dark);
+}
+
+.task-desc {
+    font-size: 0.885rem;
+    line-height: 1.55;
+    color: var(--tf-text-secondary);
+}
+
+.date-pill {
+    background-color: var(--tf-primary-light);
+    color: var(--tf-primary);
+    font-size: 0.785rem;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 20px;
+}
+
+.assignee-badge {
+    background-color: #f1f5f9;
+    padding: 2px 8px 2px 3px;
+    border-radius: 20px;
+    font-size: 0.785rem;
+    font-weight: 500;
+    color: var(--tf-text-secondary);
+}
+
+.avatar-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--tf-lavender), var(--tf-purple));
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-circle-sm {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--tf-lavender), var(--tf-purple));
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Empty State Card */
+.empty-state-card {
+    background-color: var(--tf-surface);
+    border-radius: var(--tf-radius);
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    background-color: var(--tf-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Form Card */
+.form-card {
+    background-color: var(--tf-surface);
+}
+
+.form-card-header {
+    background-color: #ffffff;
+}
+
+.header-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Inputs & Form Controls */
+.taskflow-form .form-control,
+.filter-card .form-control {
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-sm);
+    padding: 0.65rem 0.95rem;
+    font-size: 0.925rem;
+    color: var(--tf-text-dark);
+    transition: var(--tf-transition);
+}
+
+.taskflow-form .form-control:focus,
+.filter-card .form-control:focus {
+    border-color: var(--tf-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.form-label {
+    font-size: 0.885rem;
+    margin-bottom: 0.4rem;
+}
+
+/* Warning Box for Deletion */
+.warning-icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background-color: #fee2e2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Alerts */
+.taskflow-alert {
+    border: none;
+    border-radius: var(--tf-radius-sm);
+    padding: 0.9rem 1.25rem;
+}
+
+/* Footer */
+.taskflow-footer {
+    background-color: #ffffff;
+    border-top: 1px solid var(--tf-border);
+}
+
+/* Table View custom styling */
+.table th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tf-text-secondary);
+    font-weight: 600;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.table td {
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+}
+
+/* Native Calendar View Styling */
+.calendar-grid-header .col {
+    padding: 0.65rem 0.2rem;
+    font-size: 0.75rem;
+    color: var(--tf-text-secondary);
+    letter-spacing: 0.05em;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-day-cell {
+    min-height: 110px;
+    background: #fafbfe;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease;
+}
+
+.calendar-day-cell:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+}
+
+.calendar-day-cell.other-month {
+    background: #ffffff;
+    opacity: 0.4;
+}
+
+.calendar-day-cell.is-today {
+    background: #f5f3ff;
+    border: 2px solid var(--tf-primary);
+}
+
+.calendar-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.calendar-day-number {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--tf-text-dark);
+}
+
+.calendar-day-cell.is-today .calendar-day-number {
+    background: var(--tf-primary);
+    color: #ffffff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.calendar-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    max-height: 85px;
+}
+
+.calendar-task-badge {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    color: #4338ca;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.calendar-task-badge:hover {
+    background: var(--tf-primary);
+    border-color: var(--tf-primary);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.calendar-task-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tf-primary);
+    flex-shrink: 0;
+}
+
+.calendar-task-badge:hover .dot {
+    background: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .calendar-grid {
+        gap: 4px;
+    }
+    .calendar-day-cell {
+        min-height: 80px;
+        padding: 4px;
+    }
+    .calendar-task-badge {
+        font-size: 0.7rem;
+        padding: 2px 4px;
+    }
+}

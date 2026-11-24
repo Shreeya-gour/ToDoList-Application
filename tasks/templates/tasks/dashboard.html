@@ -1,0 +1,808 @@
+{% extends 'tasks/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard &bull; TaskFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Native Calendar View Styling */
+.calendar-grid-header .col {
+    padding: 0.65rem 0.2rem;
+    font-size: 0.75rem;
+    color: var(--tf-text-secondary);
+    letter-spacing: 0.05em;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-day-cell {
+    min-height: 110px;
+    background: #fafbfe;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease;
+}
+
+.calendar-day-cell:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+}
+
+.calendar-day-cell.other-month {
+    background: #ffffff;
+    opacity: 0.4;
+}
+
+.calendar-day-cell.is-today {
+    background: #f5f3ff;
+    border: 2px solid var(--tf-primary);
+}
+
+.calendar-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.calendar-day-number {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--tf-text-dark);
+}
+
+.calendar-day-cell.is-today .calendar-day-number {
+    background: var(--tf-primary);
+    color: #ffffff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.calendar-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    max-height: 85px;
+}
+
+.calendar-task-badge {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    color: #4338ca;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.calendar-task-badge:hover {
+    background: var(--tf-primary);
+    border-color: var(--tf-primary);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.calendar-task-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tf-primary);
+    flex-shrink: 0;
+}
+
+.calendar-task-badge:hover .dot {
+    background: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .calendar-grid {
+        gap: 4px;
+    }
+    .calendar-day-cell {
+        min-height: 80px;
+        padding: 4px;
+    }
+    .calendar-task-badge {
+        font-size: 0.7rem;
+        padding: 2px 4px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-xl">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-lavender-subtle text-primary-emphasis px-3 py-1 rounded-pill">
+                    <i class="bi bi-calendar3 me-1"></i> {{ today_date|date:"l, F j, Y" }}
+                </span>
+            </div>
+            <h1 class="h2 fw-bold text-dark mb-1">Task Management Dashboard</h1>
+            <p class="text-secondary mb-0">Organize, monitor, and accomplish your work efficiently.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Export Report Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 px-3 py-2 shadow-sm rounded-3 bg-white" 
+                        type="button" 
+                        id="exportDropdown" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
+                    <i class="bi bi-download"></i>
+                    <span class="fw-semibold">Export Report</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 py-2" aria-labelledby="exportDropdown" style="min-width: 250px;">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" 
+                           href="{% url 'export_csv' %}{% if search_query or date_filter %}?q={{ search_query }}&date={{ date_filter }}{% endif %}">
+                            <i class="bi bi-filetype-csv text-success fs-5"></i>
+                            <div>
+                                <div class="fw-semibold small text-dark">Export to CSV / Excel</div>
+                                <div class="text-muted fs-8">Spreadsheet with all task fields</div>
+                            </div>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" 
+                           href="{% url 'export_pdf' %}{% if search_query or date_filter %}?q={{ search_query }}&date={{ date_filter }}{% endif %}">
+                            <i class="bi bi-file-earmark-pdf text-danger fs-5"></i>
+                            <div>
+                                <div class="fw-semibold small text-dark">Export to PDF Document</div>
+                                <div class="text-muted fs-8">Printable landscape summary</div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <a href="{% url 'task_create' %}" class="btn btn-primary-custom d-flex align-items-center gap-2 px-3 py-2 shadow-sm">
+                <i class="bi bi-plus-lg fs-6"></i>
+                <span class="fw-semibold">Add New Task</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Metrics Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-4">
+            <div class="card metric-card border-0 shadow-sm">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-uppercase text-secondary fw-semibold fs-7 tracking-wide">Total Tasks</span>
+                        <h2 class="display-6 fw-bold text-dark mt-2 mb-0">{{ total_count }}</h2>
+                        <span class="text-muted small">Recorded in database</span>
+                    </div>
+                    <div class="metric-icon-box bg-purple-tint">
+                        <i class="bi bi-list-check text-purple"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4">
+            <div class="card metric-card border-0 shadow-sm">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-uppercase text-secondary fw-semibold fs-7 tracking-wide">Due Today</span>
+                        <h2 class="display-6 fw-bold text-dark mt-2 mb-0">{{ today_count }}</h2>
+                        <span class="text-muted small">Targeted for {{ today_date|date:"M j" }}</span>
+                    </div>
+                    <div class="metric-icon-box bg-blue-tint">
+                        <i class="bi bi-clock-history text-blue"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-lg-4">
+            <div class="card metric-card border-0 shadow-sm">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-uppercase text-secondary fw-semibold fs-7 tracking-wide">Upcoming</span>
+                        <h2 class="display-6 fw-bold text-dark mt-2 mb-0">{{ upcoming_count }}</h2>
+                        <span class="text-muted small">Scheduled for future dates</span>
+                    </div>
+                    <div class="metric-icon-box bg-lavender-tint">
+                        <i class="bi bi-calendar-event text-indigo"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search, Filter & View Controls -->
+    <div class="card filter-card border-0 shadow-sm mb-4">
+        <div class="card-body p-3 p-md-4">
+            <form method="GET" action="{% url 'dashboard' %}" class="row g-2 align-items-center">
+                <!-- Search Input -->
+                <div class="col-12 col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" 
+                               name="q" 
+                               class="form-control border-start-0 ps-0" 
+                               placeholder="Search by Task Title or Name..." 
+                               value="{{ search_query }}">
+                    </div>
+                </div>
+
+                <!-- Date Picker Filter -->
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="bi bi-calendar3"></i>
+                        </span>
+                        <input type="date" 
+                               name="date" 
+                               class="form-control border-start-0 ps-0" 
+                               value="{{ date_filter }}"
+                               title="Filter by target date">
+                    </div>
+                </div>
+
+                <!-- Submit and Reset Buttons -->
+                <div class="col-12 col-sm-6 col-md-4 d-flex gap-2 justify-content-md-end">
+                    <button type="submit" class="btn btn-outline-primary-custom d-flex align-items-center gap-1 flex-grow-1 flex-md-grow-0">
+                        <i class="bi bi-funnel"></i>
+                        <span>Filter</span>
+                    </button>
+                    {% if search_query or date_filter %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary d-flex align-items-center gap-1" title="Reset all filters">
+                            <i class="bi bi-x-circle"></i>
+                            <span>Clear</span>
+                        </a>
+                    {% endif %}
+                    
+                    <!-- View Mode Toggle -->
+                    <div class="btn-group ms-auto ms-md-0" role="group" aria-label="View toggle">
+                        <button type="button" class="btn btn-outline-secondary active" id="viewGridBtn" title="Cards View">
+                            <i class="bi bi-grid-fill"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="viewTableBtn" title="Table View">
+                            <i class="bi bi-list-task"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="viewCalendarBtn" title="Calendar View">
+                            <i class="bi bi-calendar3"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {% if search_query or date_filter %}
+                <div class="mt-3 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2 small text-secondary">
+                        <i class="bi bi-info-circle text-primary"></i>
+                        <span>Showing <strong>{{ filtered_count }}</strong> matching task{{ filtered_count|pluralize }}</span>
+                        {% if search_query %}
+                            <span class="badge bg-light text-dark border">Keyword: "{{ search_query }}"</span>
+                        {% endif %}
+                        {% if date_filter %}
+                            <span class="badge bg-light text-dark border">Date: {{ date_filter }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="small text-decoration-none text-primary">View all tasks</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tasks Display Section -->
+    {% if tasks %}
+        <!-- 1. Grid Cards View -->
+        <div id="tasksGridView" class="row g-3">
+            {% for task in tasks %}
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="card task-card h-100 border-0 shadow-sm position-relative">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <!-- Card Header: Date & Assignee Name -->
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <span class="badge date-pill d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-calendar2-date"></i>
+                                    {{ task.date|date:"M j, Y" }}
+                                </span>
+                                <div class="assignee-badge d-inline-flex align-items-center gap-1" title="Assignee: {{ task.name }}">
+                                    <span class="avatar-circle">{{ task.name|first|upper }}</span>
+                                    <span class="assignee-name text-truncate" style="max-width: 110px;">{{ task.name }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Task Title -->
+                            <h5 class="task-title fw-bold text-dark mt-2 mb-2 text-break">
+                                {{ task.task_title }}
+                            </h5>
+
+                            <!-- Task Description -->
+                            <p class="task-desc text-secondary flex-grow-1 mb-3 text-break">
+                                {{ task.description|linebreaksbr|truncatewords:28 }}
+                            </p>
+
+                            <!-- Card Footer: Timestamps & Actions -->
+                            <div class="pt-3 border-top d-flex align-items-center justify-content-between mt-auto">
+                                <span class="text-muted fs-8" title="Created on {{ task.created_at }}">
+                                    <i class="bi bi-clock me-1"></i>{{ task.created_at|date:"M j, H:i" }}
+                                </span>
+                                <div class="d-flex align-items-center gap-1">
+                                    <!-- View Details Button -->
+                                    <button type="button" 
+                                            class="btn btn-sm btn-icon btn-ghost-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#taskModal{{ task.id }}" 
+                                            title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    
+                                    <!-- Edit Button -->
+                                    <a href="{% url 'task_update' task.id %}" 
+                                       class="btn btn-sm btn-icon btn-ghost-warning" 
+                                       title="Edit Task">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
+                                    <!-- Delete Button (Triggers Modal) -->
+                                    <button type="button" 
+                                            class="btn btn-sm btn-icon btn-ghost-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal{{ task.id }}" 
+                                            title="Delete Task">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal: Task Full Details -->
+                <div class="modal fade" id="taskModal{{ task.id }}" tabindex="-1" aria-labelledby="taskModalLabel{{ task.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg rounded-4">
+                            <div class="modal-header border-bottom-0 pb-0">
+                                <span class="badge date-pill d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-calendar2-date"></i> {{ task.date|date:"l, F j, Y" }}
+                                </span>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body pt-3 pb-2">
+                                <h4 class="fw-bold text-dark mb-3">{{ task.task_title }}</h4>
+                                
+                                <div class="detail-box mb-3 p-3 rounded-3 bg-light">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <span class="text-secondary small d-block">Assignee / Name</span>
+                                            <span class="fw-semibold text-dark"><i class="bi bi-person me-1"></i>{{ task.name }}</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-secondary small d-block">Target Date</span>
+                                            <span class="fw-semibold text-dark"><i class="bi bi-calendar3 me-1"></i>{{ task.date|date:"M j, Y" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Description</span>
+                                    <div class="p-3 bg-white border rounded-3 text-secondary" style="max-height: 240px; overflow-y: auto;">
+                                        {{ task.description|linebreaks }}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between text-muted fs-8 px-1">
+                                    <span>Created: {{ task.created_at|date:"M j, Y H:i" }}</span>
+                                    <span>Updated: {{ task.updated_at|date:"M j, Y H:i" }}</span>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top-0 pt-0">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                <a href="{% url 'task_update' task.id %}" class="btn btn-primary-custom btn-sm">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit Task
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal: Delete Confirmation (In-Page CSRF POST Form) -->
+                <div class="modal fade" id="deleteModal{{ task.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ task.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg rounded-4">
+                            <div class="modal-body p-4 text-center">
+                                <div class="warning-icon-box mx-auto mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill text-danger fs-2"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-2">Delete This Task?</h5>
+                                <p class="text-secondary mb-3 small">
+                                    Are you sure you want to delete <strong>"{{ task.task_title }}"</strong>? This action will permanently remove it from the database.
+                                </p>
+                                
+                                <form method="POST" action="{% url 'task_delete' task.id %}">
+                                    {% csrf_token %}
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button type="button" class="btn btn-light px-3" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger px-4 d-flex align-items-center gap-1">
+                                            <i class="bi bi-trash3"></i>
+                                            <span>Yes, Delete</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 2. Responsive Table View (Hidden by default, toggleable) -->
+        <div id="tasksTableView" class="d-none">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Task Title</th>
+                                <th>Name (Assignee)</th>
+                                <th>Target Date</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <span class="fw-bold text-dark">{{ task.task_title }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="avatar-circle-sm">{{ task.name|first|upper }}</span>
+                                            <span>{{ task.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge date-pill">
+                                            <i class="bi bi-calendar2 me-1"></i>{{ task.date|date:"M j, Y" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary small text-truncate d-inline-block" style="max-width: 250px;">
+                                            {{ task.description }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small">{{ task.created_at|date:"M j, H:i" }}</span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-inline-flex gap-1">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-icon btn-ghost-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#taskModal{{ task.id }}" 
+                                                    title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <a href="{% url 'task_update' task.id %}" 
+                                               class="btn btn-sm btn-icon btn-ghost-warning" 
+                                               title="Edit Task">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-icon btn-ghost-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal{{ task.id }}" 
+                                                    title="Delete Task">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Interactive Monthly Calendar View (Toggleable) -->
+        <div id="tasksCalendarView" class="d-none">
+            <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 bg-white">
+                <!-- Calendar Toolbar -->
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-3" id="calPrevBtn" title="Previous Month">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-3" id="calNextBtn" title="Next Month">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary-custom rounded-3 px-3" id="calTodayBtn">
+                            Today
+                        </button>
+                        <h4 class="h5 fw-bold text-dark mb-0 ms-2" id="calMonthYearTitle">Month Year</h4>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-lavender-subtle text-primary-emphasis px-3 py-1 rounded-pill">
+                            <i class="bi bi-calendar-check me-1"></i> Interactive Monthly Schedule
+                        </span>
+                        <span class="text-secondary small d-none d-md-inline">Click any task to view full details</span>
+                    </div>
+                </div>
+
+                <!-- Calendar Weekdays Header -->
+                <div class="calendar-grid-header row g-1 text-center fw-bold text-secondary text-uppercase fs-8 mb-2">
+                    <div class="col">Sun</div>
+                    <div class="col">Mon</div>
+                    <div class="col">Tue</div>
+                    <div class="col">Wed</div>
+                    <div class="col">Thu</div>
+                    <div class="col">Fri</div>
+                    <div class="col">Sat</div>
+                </div>
+
+                <!-- Calendar Days Grid -->
+                <div id="calendarDaysGrid" class="calendar-grid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Data Payload for Native Calendar -->
+        <script id="tasksCalendarData" type="application/json">
+        [
+            {% for task in tasks %}
+            {
+                "id": {{ task.id }},
+                "title": "{{ task.task_title|escapejs }}",
+                "name": "{{ task.name|escapejs }}",
+                "date": "{{ task.date|date:'Y-m-d' }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+        </script>
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="card empty-state-card border-0 shadow-sm text-center p-5">
+            <div class="empty-state-icon mx-auto mb-3">
+                <i class="bi bi-clipboard2-check text-indigo display-5"></i>
+            </div>
+            {% if search_query or date_filter %}
+                <h3 class="fw-bold text-dark mb-1">No matching tasks found</h3>
+                <p class="text-secondary mb-4 mx-auto" style="max-width: 480px;">
+                    We couldn't find any tasks matching your current filters. Try refining your keywords or clear your search to view all tasks.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary-custom">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Clear Filters
+                    </a>
+                </div>
+            {% else %}
+                <h3 class="fw-bold text-dark mb-1">No tasks created yet</h3>
+                <p class="text-secondary mb-4 mx-auto" style="max-width: 480px;">
+                    Welcome to TaskFlow! Your task dashboard is completely clean. Get started right now by creating your first task.
+                </p>
+                <div>
+                    <a href="{% url 'task_create' %}" class="btn btn-primary-custom px-4 py-2 shadow-sm">
+                        <i class="bi bi-plus-lg me-1"></i> Create Your First Task
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const gridBtn = document.getElementById('viewGridBtn');
+    const tableBtn = document.getElementById('viewTableBtn');
+    const calendarBtn = document.getElementById('viewCalendarBtn');
+    const gridView = document.getElementById('tasksGridView');
+    const tableView = document.getElementById('tasksTableView');
+    const calendarView = document.getElementById('tasksCalendarView');
+
+    const calTitle = document.getElementById('calMonthYearTitle');
+    const calGrid = document.getElementById('calendarDaysGrid');
+    const prevBtn = document.getElementById('calPrevBtn');
+    const nextBtn = document.getElementById('calNextBtn');
+    const todayBtn = document.getElementById('calTodayBtn');
+
+    // Load tasks
+    let taskList = [];
+    const rawData = document.getElementById('tasksCalendarData');
+    if (rawData) {
+        try {
+            taskList = JSON.parse(rawData.textContent);
+        } catch (e) {
+            console.error('Failed to parse calendar task data', e);
+        }
+    }
+
+    // Current view date
+    let viewDate = new Date();
+
+    function renderNativeCalendar() {
+        if (!calGrid || !calTitle) return;
+
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        calTitle.textContent = `${monthNames[month]} ${year}`;
+
+        // First day of month and number of days
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+        // Today's date components
+        const today = new Date();
+        const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+        const todayDate = today.getDate();
+
+        calGrid.innerHTML = '';
+
+        // Previous month days
+        for (let i = firstDayIndex - 1; i >= 0; i--) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-day-cell other-month';
+            cell.innerHTML = `<div class="calendar-day-header"><span class="calendar-day-number text-muted">${daysInPrevMonth - i}</span></div>`;
+            calGrid.appendChild(cell);
+        }
+
+        // Current month days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const cell = document.createElement('div');
+            const isToday = isCurrentMonth && day === todayDate;
+            cell.className = `calendar-day-cell${isToday ? ' is-today' : ''}`;
+
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayTasks = taskList.filter(t => t.date === dateStr);
+
+            let tasksHtml = '';
+            dayTasks.forEach(task => {
+                tasksHtml += `
+                    <div class="calendar-task-badge" data-task-id="${task.id}" title="${task.title} (${task.name})">
+                        <span class="dot"></span>
+                        <span class="text-truncate">${task.title}</span>
+                    </div>
+                `;
+            });
+
+            cell.innerHTML = `
+                <div class="calendar-day-header">
+                    <span class="calendar-day-number">${day}</span>
+                    ${dayTasks.length > 0 ? `<span class="badge bg-lavender-subtle text-primary-emphasis fs-8 rounded-pill">${dayTasks.length}</span>` : ''}
+                </div>
+                <div class="calendar-tasks-list">
+                    ${tasksHtml}
+                </div>
+            `;
+            calGrid.appendChild(cell);
+        }
+
+        // Fill trailing empty cells for consistent 7-day rows
+        const totalCells = firstDayIndex + daysInMonth;
+        const nextMonthDays = (7 - (totalCells % 7)) % 7;
+        for (let j = 1; j <= nextMonthDays; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-day-cell other-month';
+            cell.innerHTML = `<div class="calendar-day-header"><span class="calendar-day-number text-muted">${j}</span></div>`;
+            calGrid.appendChild(cell);
+        }
+
+        // Attach click listeners to task badges
+        calGrid.querySelectorAll('.calendar-task-badge').forEach(badge => {
+            badge.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const taskId = this.getAttribute('data-task-id');
+                const modalEl = document.getElementById('taskModal' + taskId);
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                }
+            });
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function () {
+            viewDate.setMonth(viewDate.getMonth() - 1);
+            renderNativeCalendar();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function () {
+            viewDate.setMonth(viewDate.getMonth() + 1);
+            renderNativeCalendar();
+        });
+    }
+
+    if (todayBtn) {
+        todayBtn.addEventListener('click', function () {
+            viewDate = new Date();
+            renderNativeCalendar();
+        });
+    }
+
+    // View Switching Logic
+    function showGrid() {
+        if (gridView) gridView.classList.remove('d-none');
+        if (tableView) tableView.classList.add('d-none');
+        if (calendarView) calendarView.classList.add('d-none');
+        if (gridBtn) gridBtn.classList.add('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+        if (calendarBtn) calendarBtn.classList.remove('active');
+        localStorage.setItem('taskflow_view', 'grid');
+    }
+
+    function showTable() {
+        if (tableView) tableView.classList.remove('d-none');
+        if (gridView) gridView.classList.add('d-none');
+        if (calendarView) calendarView.classList.add('d-none');
+        if (tableBtn) tableBtn.classList.add('active');
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (calendarBtn) calendarBtn.classList.remove('active');
+        localStorage.setItem('taskflow_view', 'table');
+    }
+
+    function showCalendar() {
+        if (calendarView) calendarView.classList.remove('d-none');
+        if (gridView) gridView.classList.add('d-none');
+        if (tableView) tableView.classList.add('d-none');
+        if (calendarBtn) calendarBtn.classList.add('active');
+        if (gridBtn) gridBtn.classList.remove('active');
+        if (tableBtn) tableBtn.classList.remove('active');
+        localStorage.setItem('taskflow_view', 'calendar');
+        renderNativeCalendar();
+    }
+
+    if (gridBtn) gridBtn.addEventListener('click', showGrid);
+    if (tableBtn) tableBtn.addEventListener('click', showTable);
+    if (calendarBtn) calendarBtn.addEventListener('click', showCalendar);
+
+    // Initial check from localStorage
+    const saved = localStorage.getItem('taskflow_view') || 'grid';
+    if (saved === 'calendar') {
+        showCalendar();
+    } else if (saved === 'table') {
+        showTable();
+    } else {
+        showGrid();
+    }
+});
+</script>
+{% endblock %}
